@@ -14,7 +14,7 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://your-frontend-domain.com' // Replace with your deployed frontend URL if/when you have it
+    'https://uni-trade-chi.vercel.app'
   ],
   credentials: true
 }));

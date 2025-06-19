@@ -33,7 +33,7 @@ function ItemDetail() {
         <img src={`https://unitrade-backend-wwfh.onrender.com${item.imageUrl}`} alt={item.title} style={{ maxWidth: '100%', borderRadius: 10, marginBottom: 20 }} />
       )}
       <p><strong>Description:</strong> {item.description}</p>
-      <p><strong>Price:</strong> ${item.price}</p>
+      <p><strong>Price:</strong> ₹{item.price}</p>
       <p><strong>Category:</strong> {item.category}</p>
       <p><strong>Location:</strong> {item.location}</p>
       <p><strong>WhatsApp:</strong> <a href={`https://wa.me/${item.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a></p>

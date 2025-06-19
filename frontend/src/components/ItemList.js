@@ -67,7 +67,7 @@ function ItemList() {
                 />
                 <div className="item-info">
                   <h3 className="item-title">{item.title}</h3>
-                  <p className="item-price">${item.price}</p>
+                  <p className="item-price">₹{item.price}</p>
                   <p className="item-description">{item.description}</p>
                   <div className="item-meta">
                     <span className="item-category">{item.category}</span>

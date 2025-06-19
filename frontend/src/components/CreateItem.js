@@ -86,7 +86,7 @@ function CreateItem() {
             />
           </label>
           <label>
-            Price ($)*
+            Price (₹)*
             <input
               type="number"
               name="price"
@@ -95,7 +95,7 @@ function CreateItem() {
               required
               min={0}
               step={0.01}
-              placeholder="e.g. 25"
+              placeholder="e.g. 500"
             />
           </label>
           <label>
