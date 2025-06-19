@@ -1,6 +1,6 @@
 # UniTrade
 
-![UniTrade Homepage](./frontend/Homepage.png)
+![UniTrade Homepage](./Homepage.png)
 
 A modern, full-stack peer-to-peer marketplace for students to buy and sell used items (books, clothes, electronics, and more) with others around their campus.
 
