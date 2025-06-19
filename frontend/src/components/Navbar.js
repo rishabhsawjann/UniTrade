@@ -1,9 +1,16 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
 function Navbar() {
   const isLoggedIn = !!localStorage.getItem('token');
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/');
+    window.location.reload();
+  };
 
   return (
     <nav className="navbar">
@@ -27,6 +34,9 @@ function Navbar() {
             <Link to="/create-item" className="nav-link">Sell Item</Link>
           </li>
         </ul>
+        {isLoggedIn && (
+          <button onClick={handleLogout} style={{ marginLeft: 16, background: '#e53e3e', color: 'white', border: 'none', borderRadius: 6, padding: '10px 18px', fontWeight: 600, cursor: 'pointer' }}>Logout</button>
+        )}
       </div>
     </nav>
   );

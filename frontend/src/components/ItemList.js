@@ -74,7 +74,7 @@ function ItemList() {
             items.map(item => (
               <div key={item._id} className="item-card">
                 <img
-                  src={item.imageUrl ? `https://unitrade-backend-wwfh.onrender.com${item.imageUrl}` : 'https://via.placeholder.com/300x200?text=No+Image'}
+                  src={item.imageUrl ? `https://unitrade-backend-wwfh.onrender.com${item.imageUrl}` : 'https://placehold.co/300x200?text=No+Image'}
                   alt={item.title}
                   className="item-image"
                 />
