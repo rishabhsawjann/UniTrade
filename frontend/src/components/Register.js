@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Auth.css';
 
@@ -14,6 +14,7 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -40,6 +41,7 @@ function Register() {
       });
       setSuccess(true);
       setFormData({ name: '', email: '', password: '', confirmPassword: '', university: '' });
+      setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
       setError(
         err.response?.data?.error || 'Registration failed. Please try again.'

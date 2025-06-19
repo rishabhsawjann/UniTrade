@@ -9,7 +9,8 @@ const itemSchema = new mongoose.Schema({
   imageUrl: { type: String },
   whatsapp: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  sold: { type: Boolean, default: false }
 });
 
 module.exports = mongoose.model('Item', itemSchema); 

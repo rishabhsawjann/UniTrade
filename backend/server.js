@@ -62,7 +62,7 @@ app.get('/', (req, res) => {
 // Placeholder routes (we'll implement these next)
 app.get('/api/items', async (req, res) => {
   try {
-    const items = await Item.find().sort({ createdAt: -1 });
+    const items = await Item.find({ sold: { $ne: true } }).sort({ createdAt: -1 });
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch items' });
@@ -151,6 +151,20 @@ app.delete('/api/items/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Item deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete item' });
+  }
+});
+
+// Mark item as sold
+app.patch('/api/items/:id/sold', authenticateToken, async (req, res) => {
+  try {
+    const item = await Item.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Item not found' });
+    if (item.user.toString() !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+    item.sold = true;
+    await item.save();
+    res.json({ message: 'Item marked as sold' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to mark as sold' });
   }
 });
 
