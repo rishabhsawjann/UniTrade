@@ -10,6 +10,7 @@ import ItemDetail from './components/ItemDetail';
 import CreateItem from './components/CreateItem';
 import Footer from './components/Footer';
 import MyListings from './components/MyListings';
+import Welcome from './components/Welcome';
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token');
@@ -24,7 +25,7 @@ function App() {
         <Navbar />
         <main className="container">
           <Routes>
-            <Route path="/" element={token ? <Home /> : <Navigate to="/register" />} />
+            <Route path="/" element={token ? <Home /> : <Welcome />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/items" element={<ItemList />} />

@@ -8,6 +8,8 @@ const Item = require('./models/Item');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 const jwt = require('jsonwebtoken');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 
@@ -27,15 +29,19 @@ mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Multer setup for image uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, 'uploads/'));
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'unitrade_uploads',
+    allowed_formats: ['jpg', 'jpeg', 'png'],
   },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
-  }
 });
 const upload = multer({ storage });
 
@@ -72,7 +78,7 @@ app.get('/api/items', async (req, res) => {
 app.post('/api/items', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     const { title, description, price, category, location, whatsapp } = req.body;
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : '';
+    const imageUrl = req.file ? req.file.path : '';
     const item = new Item({
       title,
       description,
