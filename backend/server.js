@@ -11,7 +11,13 @@ const User = require('./models/User');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://your-frontend-domain.com' // Replace with your deployed frontend URL if/when you have it
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // MongoDB Connection
