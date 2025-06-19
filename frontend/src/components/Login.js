@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Auth.css';
+import axios from 'axios';
 
 function Login() {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     setFormData({
@@ -15,10 +17,17 @@ function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log('Login attempt:', formData);
+    setError('');
+    try {
+      const res = await axios.post('https://unitrade-backend-wwfh.onrender.com/api/login', formData);
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      window.location.href = '/items'; // redirect to items page
+    } catch (err) {
+      setError(err.response?.data?.error || 'Login failed.');
+    }
   };
 
   return (
@@ -53,6 +62,7 @@ function Login() {
           <button type="submit" className="auth-button">
             Login
           </button>
+          {error && <div style={{ color: 'red', textAlign: 'center', marginTop: 10 }}>{error}</div>}
         </form>
         <p className="auth-link">
           Don't have an account? <Link to="/register">Register here</Link>

@@ -45,7 +45,10 @@ function CreateItem() {
         if (value) formData.append(key, value);
       });
       await axios.post('https://unitrade-backend-wwfh.onrender.com/api/items', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        }
       });
       setSuccess(true);
       setForm({ title: '', description: '', price: '', category: '', location: '', whatsapp: '', image: null });

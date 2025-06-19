@@ -7,6 +7,7 @@ function ItemList() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -21,6 +22,18 @@ function ItemList() {
     };
     fetchItems();
   }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this item?')) return;
+    try {
+      await axios.delete(`https://unitrade-backend-wwfh.onrender.com/api/items/${id}`,
+        { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } }
+      );
+      setItems(items.filter(item => item._id !== id));
+    } catch (err) {
+      alert('Failed to delete item.');
+    }
+  };
 
   return (
     <div className="item-list-container">
@@ -41,9 +54,9 @@ function ItemList() {
         </select>
         <select className="filter-select">
           <option value="">Price Range</option>
-          <option value="0-50">$0 - $50</option>
-          <option value="51-100">$51 - $100</option>
-          <option value="101+">$101+</option>
+          <option value="0-50">₹0 - ₹50</option>
+          <option value="51-100">₹51 - ₹100</option>
+          <option value="101+">₹101+</option>
         </select>
       </div>
 
@@ -76,6 +89,9 @@ function ItemList() {
                   <Link to={`/items/${item._id}`} className="view-item-button">
                     View Details
                   </Link>
+                  {item.user === user.id && (
+                    <button onClick={() => handleDelete(item._id)} style={{marginTop: 10, background: '#e53e3e', color: 'white', border: 'none', borderRadius: 6, padding: '10px 18px', fontWeight: 600, cursor: 'pointer'}}>Delete</button>
+                  )}
                 </div>
               </div>
             ))

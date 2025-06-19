@@ -7,6 +7,7 @@ const multer = require('multer');
 const Item = require('./models/Item');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -41,6 +42,18 @@ const upload = multer({ storage });
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// JWT auth middleware
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No token provided' });
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+    req.user = user;
+    next();
+  });
+}
+
 // Basic route
 app.get('/', (req, res) => {
   res.json({ message: 'Student Marketplace API is running!' });
@@ -56,7 +69,7 @@ app.get('/api/items', async (req, res) => {
   }
 });
 
-app.post('/api/items', upload.single('image'), async (req, res) => {
+app.post('/api/items', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     const { title, description, price, category, location, whatsapp } = req.body;
     const imageUrl = req.file ? `/uploads/${req.file.filename}` : '';
@@ -67,7 +80,8 @@ app.post('/api/items', upload.single('image'), async (req, res) => {
       category,
       location,
       imageUrl,
-      whatsapp
+      whatsapp,
+      user: req.user.id
     });
     await item.save();
     res.status(201).json({ message: 'Item created', item });
@@ -113,6 +127,30 @@ app.post('/api/register', async (req, res) => {
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Registration failed', details: err.message });
+  }
+});
+
+// User login endpoint
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+  const valid = await bcrypt.compare(password, user.password);
+  if (!valid) return res.status(400).json({ error: 'Invalid credentials' });
+  const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, user: { id: user._id, name: user.name, email: user.email, university: user.university } });
+});
+
+// Delete item by ID (owner only)
+app.delete('/api/items/:id', authenticateToken, async (req, res) => {
+  try {
+    const item = await Item.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Item not found' });
+    if (item.user.toString() !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+    await item.deleteOne();
+    res.json({ message: 'Item deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete item' });
   }
 });
 
