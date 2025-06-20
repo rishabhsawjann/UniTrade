@@ -71,7 +71,7 @@ app.get('/api/items', async (req, res) => {
     const items = await Item.find({ sold: { $ne: true } }).sort({ createdAt: -1 });
     res.json(items);
   } catch (err) {
-    console.error(err);
+    console.error(err.stack || JSON.stringify(err, null, 2) || err);
     res.status(500).json({ error: 'Failed to fetch items' });
   }
 });
@@ -93,7 +93,7 @@ app.post('/api/items', authenticateToken, upload.single('image'), async (req, re
     await item.save();
     res.status(201).json({ message: 'Item created', item });
   } catch (err) {
-    console.error(err);
+    console.error(err.stack || JSON.stringify(err, null, 2) || err);
     res.status(500).json({ error: 'Failed to create item', details: err.message });
   }
 });
@@ -109,7 +109,7 @@ app.get('/api/items/:id', async (req, res) => {
     if (!item) return res.status(404).json({ error: 'Item not found' });
     res.json(item);
   } catch (err) {
-    console.error(err);
+    console.error(err.stack || JSON.stringify(err, null, 2) || err);
     res.status(500).json({ error: 'Failed to fetch item' });
   }
 });
@@ -135,7 +135,7 @@ app.post('/api/register', async (req, res) => {
     await user.save();
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
-    console.error(err);
+    console.error(err.stack || JSON.stringify(err, null, 2) || err);
     res.status(500).json({ error: 'Registration failed', details: err.message });
   }
 });
@@ -160,7 +160,7 @@ app.delete('/api/items/:id', authenticateToken, async (req, res) => {
     await item.deleteOne();
     res.json({ message: 'Item deleted successfully' });
   } catch (err) {
-    console.error(err);
+    console.error(err.stack || JSON.stringify(err, null, 2) || err);
     res.status(500).json({ error: 'Failed to delete item' });
   }
 });
@@ -175,7 +175,7 @@ app.patch('/api/items/:id/sold', authenticateToken, async (req, res) => {
     await item.save();
     res.json({ message: 'Item marked as sold' });
   } catch (err) {
-    console.error(err);
+    console.error(err.stack || JSON.stringify(err, null, 2) || err);
     res.status(500).json({ error: 'Failed to mark as sold' });
   }
 });
