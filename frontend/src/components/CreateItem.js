@@ -36,8 +36,12 @@ function CreateItem() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'image') {
-      setForm({ ...form, image: files[0] });
-      setPreview(URL.createObjectURL(files[0]));
+      setForm({ ...form, image: files && files[0] ? files[0] : null });
+      if (files && files[0]) {
+        setPreview(URL.createObjectURL(files[0]));
+      } else {
+        setPreview(null);
+      }
     } else {
       setForm({ ...form, [name]: value });
     }
