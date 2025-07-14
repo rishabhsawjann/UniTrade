@@ -1,13 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-require('dotenv').config({path: './config.env'});
+require('dotenv').config();
 const path = require('path');
 const multer = require('multer');
 const Item = require('./models/Item');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 const jwt = require('jsonwebtoken');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 
@@ -15,7 +17,6 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'http://localhost:3001',
     'https://uni-trade-chi.vercel.app'
   ],
   credentials: true
@@ -28,16 +29,21 @@ mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const upload = multer({ storage: storage });
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'unitrade_uploads',
+    allowed_formats: ['jpg', 'jpeg', 'png'],
+  },
+});
+const upload = multer({ storage });
 
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -74,7 +80,7 @@ app.get('/api/items', async (req, res) => {
 app.post('/api/items', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     const { title, description, price, category, location, whatsapp } = req.body;
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : '';
+    const imageUrl = req.file ? req.file.path : '';
     const item = new Item({
       title,
       description,
@@ -88,7 +94,8 @@ app.post('/api/items', authenticateToken, upload.single('image'), async (req, re
     await item.save();
     res.status(201).json({ message: 'Item created', item });
   } catch (err) {
-    console.error(err);
+    console.error('Error type:', typeof err, err);
+    console.error(err.stack || JSON.stringify(err, null, 2) || err);
     res.status(500).json({ error: 'Failed to create item', details: err.message });
   }
 });

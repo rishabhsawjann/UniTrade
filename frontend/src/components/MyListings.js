@@ -1,101 +1,83 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import './MyListings.css'; // Import the stylesheet
 
 function MyListings() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-
-    async function fetchMyItems() {
-      if (!user) {
-        setError("Please log in to see your listings.");
-        setLoading(false);
-        return;
-      }
+    const fetchItems = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/items', {
-           headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const userItems = res.data.filter(item => item.user === user.id);
-        setItems(userItems);
+        const res = await axios.get('https://unitrade-backend-wwfh.onrender.com/api/items');
+        setItems(res.data.filter(item => item.user === user.id));
       } catch (err) {
-        setError('Failed to fetch your listings.');
-        console.error(err);
+        setError('Failed to load your items.');
       } finally {
         setLoading(false);
       }
-    }
+    };
+    fetchItems();
+  }, [user.id]);
 
-    fetchMyItems();
-  }, []);
-
-  const handleSold = async (id) => {
-    if (window.confirm('Are you sure you want to mark this item as sold? This cannot be undone.')) {
-      try {
-        const token = localStorage.getItem('token');
-        await axios.patch(`http://localhost:5000/api/items/${id}/sold`, {}, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        setItems(prevItems => 
-          prevItems.map(item => item._id === id ? { ...item, sold: true } : item)
-        );
-      } catch (err) {
-        console.error("Failed to mark as sold", err);
-        alert('Could not mark item as sold. Please try again.');
-      }
+  const handleMarkSold = async (id) => {
+    if (!window.confirm('Mark this item as sold?')) return;
+    try {
+      await axios.patch(`https://unitrade-backend-wwfh.onrender.com/api/items/${id}/sold`, {}, {
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+      });
+      setItems(items.map(item => item._id === id ? { ...item, sold: true } : item));
+    } catch (err) {
+      alert('Failed to mark as sold.');
     }
   };
 
-  if (loading) return <div className="my-listings-container"><p style={{textAlign: 'center'}}>Loading your listings...</p></div>;
-  if (error) return <div className="my-listings-container"><p style={{textAlign: 'center', color: 'red'}}>{error}</p></div>;
-
   return (
-    <div className="my-listings-container">
-      <div className="my-listings-header">
-        <h1>My Listings</h1>
-      </div>
-      {items.length === 0 ? (
-        <p style={{ textAlign: 'center', fontSize: '1.2rem', color: '#666' }}>
-          You haven't listed any items yet. <Link to="/sell">Sell an Item</Link>
-        </p>
+    <div className="item-list-container">
+      <h1>My Listings</h1>
+      {loading ? (
+        <div style={{ textAlign: 'center', marginTop: 40 }}>Loading your items...</div>
+      ) : error ? (
+        <div style={{ color: 'red', textAlign: 'center', marginTop: 40 }}>{error}</div>
       ) : (
-        <div className="my-listings-grid">
-          {items.map(item => (
-            <div key={item._id} className="my-listings-item-card">
-              <Link to={`/items/${item._id}`} className="my-listings-item-image">
+        <div className="items-grid">
+          {items.length === 0 ? (
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', color: '#888' }}>
+              You have not posted any items yet.
+            </div>
+          ) : (
+            items.map(item => (
+              <div key={item._id} className="item-card">
                 <img
-                  src={item.imageUrl ? `http://localhost:5000${item.imageUrl}` : 'https://placehold.co/300x200?text=No+Image'}
+                  src={item.imageUrl ? `https://unitrade-backend-wwfh.onrender.com${item.imageUrl}` : 'https://placehold.co/300x200?text=No+Image'}
                   alt={item.title}
+                  className="item-image"
                 />
-              </Link>
-              <div className="my-listings-item-info">
-                <div>
-                    <h3>{item.title}</h3>
-                    <p>Price: ₹{item.price}</p>
-                </div>
-                <div className="my-listings-actions">
-                  <button
-                    onClick={() => handleSold(item._id)}
-                    disabled={item.sold}
-                    className={`sold-button ${item.sold ? 'already-sold' : 'mark-sold'}`}
-                  >
-                    {item.sold ? 'Sold' : 'Mark as Sold'}
-                  </button>
+                <div className="item-info">
+                  <h3 className="item-title">{item.title}</h3>
+                  <p className="item-price">₹{item.price}</p>
+                  <p className="item-description">{item.description}</p>
+                  <div className="item-meta">
+                    <span className="item-category">{item.category}</span>
+                    <span className="item-location">{item.location}</span>
+                  </div>
+                  <Link to={`/items/${item._id}`} className="view-item-button">
+                    View Details
+                  </Link>
+                  {!item.sold && (
+                    <button onClick={() => handleMarkSold(item._id)} style={{marginTop: 10, background: '#38a169', color: 'white', border: 'none', borderRadius: 6, padding: '10px 18px', fontWeight: 600, cursor: 'pointer'}}>Mark as Sold</button>
+                  )}
+                  {item.sold && <div style={{marginTop: 10, color: '#38a169', fontWeight: 600}}>Sold</div>}
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
     </div>
   );
 }
 
-export default MyListings;
+export default MyListings; 

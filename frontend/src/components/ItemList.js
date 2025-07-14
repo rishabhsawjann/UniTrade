@@ -10,28 +10,25 @@ function ItemList() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    async function fetchItems() {
+    const fetchItems = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/items');
+        const res = await axios.get('https://unitrade-backend-wwfh.onrender.com/api/items');
         setItems(res.data);
       } catch (err) {
         setError('Failed to load items.');
       } finally {
         setLoading(false);
       }
-    }
+    };
     fetchItems();
   }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this item?')) return;
-    const token = localStorage.getItem('token');
     try {
-      await axios.delete(`http://localhost:5000/api/items/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      await axios.delete(`https://unitrade-backend-wwfh.onrender.com/api/items/${id}`,
+        { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } }
+      );
       setItems(items.filter(item => item._id !== id));
     } catch (err) {
       alert('Failed to delete item.');
@@ -76,12 +73,11 @@ function ItemList() {
           ) : (
             items.map(item => (
               <div key={item._id} className="item-card">
-                <div className="item-card-image">
-                  <img
-                    src={item.imageUrl ? `http://localhost:5000${item.imageUrl}` : 'https://placehold.co/300x200?text=No+Image'}
-                    alt={item.title}
-                  />
-                </div>
+                <img
+                  src={item.imageUrl ? `https://unitrade-backend-wwfh.onrender.com${item.imageUrl}` : 'https://placehold.co/300x200?text=No+Image'}
+                  alt={item.title}
+                  className="item-image"
+                />
                 <div className="item-info">
                   <h3 className="item-title">{item.title}</h3>
                   <p className="item-price">₹{item.price}</p>
