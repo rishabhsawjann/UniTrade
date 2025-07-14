@@ -1,0 +1,98 @@
+.my-listings-container {
+  padding: 40px 20px;
+  background-color: #f4f6f8;
+  min-height: calc(100vh - 80px); /* Adjust based on navbar height */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.my-listings-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.my-listings-header h1 {
+  font-size: 2.5rem;
+  color: #333;
+}
+
+.my-listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.my-listings-item-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.my-listings-item-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.12);
+}
+
+.my-listings-item-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.my-listings-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.my-listings-item-info {
+  padding: 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.my-listings-item-info h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+}
+
+.my-listings-item-info p {
+  margin: 0 0 15px 0;
+  color: #666;
+  flex-grow: 1;
+}
+
+.my-listings-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.sold-button {
+  flex-grow: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.2s;
+}
+
+.sold-button.mark-sold {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.sold-button.mark-sold:hover {
+  background-color: #27ae60;
+}
+
+.sold-button.already-sold {
+  background-color: #e0e0e0;
+  color: #888;
+  cursor: not-allowed;
+} 

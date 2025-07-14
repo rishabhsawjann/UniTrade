@@ -2,21 +2,29 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './CreateItem.css';
 import { useNavigate } from 'react-router-dom';
+import { FaCar, FaBuilding, FaMobileAlt, FaBriefcase, FaBicycle, FaDesktop, FaTruck, FaCouch, FaTshirt, FaBook, FaPaw, FaConciergeBell } from 'react-icons/fa';
 
 const categories = [
-  'Books',
-  'Clothing',
-  'Electronics',
-  'Furniture',
-  'Other'
+  { name: 'Cars', icon: <FaCar /> },
+  { name: 'Properties', icon: <FaBuilding /> },
+  { name: 'Mobiles', icon: <FaMobileAlt /> },
+  { name: 'Jobs', icon: <FaBriefcase /> },
+  { name: 'Bikes', icon: <FaBicycle /> },
+  { name: 'Electronics & Appliances', icon: <FaDesktop /> },
+  { name: 'Commercial Vehicles & Spares', icon: <FaTruck /> },
+  { name: 'Furniture', icon: <FaCouch /> },
+  { name: 'Fashion', icon: <FaTshirt /> },
+  { name: 'Books, Sports & Hobbies', icon: <FaBook /> },
+  { name: 'Pets', icon: <FaPaw /> },
+  { name: 'Services', icon: <FaConciergeBell /> },
 ];
 
 function CreateItem() {
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [form, setForm] = useState({
     title: '',
     description: '',
     price: '',
-    category: '',
     location: '',
     whatsapp: '',
     image: null
@@ -49,23 +57,31 @@ function CreateItem() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedCategory) {
+      setError('Please select a category first.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
       const formData = new FormData();
+      // Append all form fields
       Object.entries(form).forEach(([key, value]) => {
         if (value) formData.append(key, value);
       });
-      await axios.post('https://unitrade-backend-wwfh.onrender.com/api/items', formData, {
+      // Append selected category
+      formData.append('category', selectedCategory.name);
+
+      await axios.post('http://localhost:5000/api/items', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': 'Bearer ' + localStorage.getItem('token')
         }
       });
       setSuccess(true);
-      setForm({ title: '', description: '', price: '', category: '', location: '', whatsapp: '', image: null });
-      setPreview(null);
-      setTimeout(() => setSuccess(false), 3000);
+      setTimeout(() => {
+        navigate('/items');
+      }, 2000);
     } catch (err) {
       setError('Failed to post item. Please try again.');
     } finally {
@@ -73,94 +89,102 @@ function CreateItem() {
     }
   };
 
+  const renderCategorySelector = () => (
+    <div className="category-selector">
+      <h2 className="selector-title">CHOOSE A CATEGORY</h2>
+      <ul className="category-list">
+        {categories.map((category) => (
+          <li key={category.name} className="category-item" onClick={() => setSelectedCategory(category)}>
+            <span className="category-icon">{category.icon}</span>
+            <span className="category-name">{category.name}</span>
+            <span className="category-arrow">&gt;</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  const renderForm = () => (
+    <form onSubmit={handleSubmit} className="create-item-form">
+      <div className="form-section">
+        <div className="selected-category-header">
+          <p>SELECTED CATEGORY</p>
+          <div>
+            <span>{selectedCategory.name}</span>
+            <button type="button" className="change-category-btn" onClick={() => setSelectedCategory(null)}>Change</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="form-section">
+        <h3 className="form-section-title">INCLUDE SOME DETAILS</h3>
+        <label>
+          Ad title *
+          <input
+            type="text" name="title" value={form.title} onChange={handleChange}
+            required placeholder="Mention the key features of your item (e.g. brand, model, age, type)"
+            maxLength="70"
+          />
+        </label>
+        <label>
+          Description *
+          <textarea
+            name="description" value={form.description} onChange={handleChange}
+            required placeholder="Include condition, features and reason for selling"
+            maxLength="4096"
+          />
+        </label>
+      </div>
+      
+       <div className="form-section">
+        <h3 className="form-section-title">SET A PRICE</h3>
+         <label>
+          Price *
+          <input
+            type="number" name="price" value={form.price} onChange={handleChange}
+            required placeholder="₹"
+          />
+        </label>
+      </div>
+
+      <div className="form-section">
+         <h3 className="form-section-title">YOUR LOCATION</h3>
+        <label>
+          Location*
+          <input type="text" name="location" value={form.location} onChange={handleChange} required />
+        </label>
+      </div>
+
+       <div className="form-section">
+         <h3 className="form-section-title">CONTACT DETAILS</h3>
+        <label>
+          WhatsApp Number*
+          <input type="tel" name="whatsapp" value={form.whatsapp} onChange={handleChange} required />
+        </label>
+      </div>
+      
+      <div className="form-section">
+        <h3 className="form-section-title">UPLOAD IMAGE</h3>
+        <input type="file" name="image" accept="image/*" onChange={handleChange} />
+        {preview && (
+          <div className="create-item-image-preview">
+            <img src={preview} alt="Preview" />
+          </div>
+        )}
+      </div>
+
+      <button type="submit" className="create-item-submit-btn" disabled={loading}>
+        {loading ? 'Posting...' : 'Post Ad'}
+      </button>
+      {success && <div className="create-item-success">Item posted successfully! Redirecting...</div>}
+      {error && <div className="create-item-error">{error}</div>}
+    </form>
+  );
+
   return (
     <div className="create-item-container">
       <div className="create-item-card">
-        <div className="create-item-title">Sell an Item</div>
-        <form onSubmit={handleSubmit} className="create-item-form">
-          <label>
-            Item Title*
-            <input
-              type="text"
-              name="title"
-              value={form.title}
-              onChange={handleChange}
-              required
-              placeholder="e.g. Calculus Textbook"
-            />
-          </label>
-          <label>
-            Description*
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              required
-              placeholder="Describe your item"
-              rows={4}
-            />
-          </label>
-          <label>
-            Price (₹)*
-            <input
-              type="number"
-              name="price"
-              value={form.price}
-              onChange={handleChange}
-              required
-              min={0}
-              step={0.01}
-              placeholder="e.g. 500"
-            />
-          </label>
-          <label>
-            Category*
-            <select name="category" value={form.category} onChange={handleChange} required>
-              <option value="">Select category</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Location*
-            <input
-              type="text"
-              name="location"
-              value={form.location}
-              onChange={handleChange}
-              required
-              placeholder="e.g. University Campus"
-            />
-          </label>
-          <label>
-            WhatsApp Number*
-            <input
-              type="tel"
-              name="whatsapp"
-              value={form.whatsapp}
-              onChange={handleChange}
-              required
-              placeholder="e.g. +1234567890"
-              pattern="^\+?[0-9]{10,15}$"
-              title="Enter a valid WhatsApp number with country code"
-            />
-          </label>
-          <label>
-            Image
-            <input type="file" name="image" accept="image/*" onChange={handleChange} />
-          </label>
-          {preview && (
-            <div className="create-item-image-preview">
-              <img src={preview} alt="Preview" />
-            </div>
-          )}
-          <button type="submit" className="create-item-submit-btn" disabled={loading}>
-            {loading ? 'Posting...' : 'Post Item'}
-          </button>
-          {success && <div className="create-item-success">Item posted successfully!</div>}
-          {error && <div style={{ color: 'red', textAlign: 'center', marginTop: 10 }}>{error}</div>}
-        </form>
+        {selectedCategory ? renderForm() : renderCategorySelector()}
       </div>
     </div>
   );

@@ -33,7 +33,7 @@ function Register() {
     }
     setLoading(true);
     try {
-      await axios.post('https://unitrade-backend-wwfh.onrender.com/api/register', {
+      await axios.post('http://localhost:5000/api/register', {
         name: formData.name,
         email: formData.email,
         password: formData.password,
